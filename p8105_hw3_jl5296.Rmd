@@ -83,6 +83,32 @@ ggplot(tidy2_brfss, aes(x = year, y = resp_prop, color = state)) +
 
 ```{r}
 data("instacart")
+
+dist_prod =  distinct(instacart, product_id, .keep_all = TRUE)
+dist_user = distinct(instacart, user_id, .keep_all = TRUE)
+```
+This dataset comes from an online grocery store in NYC. The size of the dataset is `r dim(instacart)`, with `r nrow(instacart)` observations. There are `r nrow(dist_prod)` distinct products for sale and `r nrow(dist_user)` unique users. The order ids are the same for a single user. There are a total of 15 variables, of which *order id*, *product id*, and *user id* are key variables that identify observations. For example, the first row corresponds to the product "Bulgarian Yogurt" ordered from an user.
+
+```{r}
+nrow(distinct(instacart, aisle_id))
+
+instacart %>% 
+  group_by(aisle_id) %>% 
+  summarize(n_items = n()) %>% 
+  arrange(desc(n_items))
+
+instacart %>% 
+  group_by(aisle_id) %>% 
+  summarize(n_items = n()) %>%
+  mutate(aisle_id = as.character(aisle_id)) %>% 
+  ggplot(aes(x = as.character(aisle_id), y = n_items, color = aisle_id)) +
+  geom_point(alpha = 0.5) +
+  viridis::scale_color_viridis(
+    name = "Aisle ID", 
+    discrete = TRUE
+  )
+
+
 ```
 
 
