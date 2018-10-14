@@ -8,13 +8,15 @@ output: github_document
 ```{r setup, include=FALSE}
 library(tidyverse)
 knitr::opts_chunk$set(
-  fig.width = 12,
-  fig.height = 3,
+  fig.width = 15,
+  fig.height = 5,
   fig.asp = .6,
-  out.width = "100%"
+  out.width = "90%"
 )
 theme_set(theme_bw() + theme(legend.position = "bottom"))
 ```
+
+# Problem 1
 ```{r}
 library(p8105.datasets)
 data("brfss_smart2010")
@@ -76,6 +78,11 @@ ggplot(tidy2_brfss, aes(x = year, y = resp_prop, color = state)) +
   geom_line() +
   facet_grid(~avg_response_type)
   
+```
+# Problem 2
+
+```{r}
+data("instacart")
 ```
 
 
