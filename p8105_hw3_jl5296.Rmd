@@ -130,3 +130,8 @@ instacart %>%
 data("ny_noaa")
 ```
 The size of this dataset is `r dim(ny_noaa)`. There are a total of `r nrow(ny_noaa)` observations with each row corresponding to a observation from a weather station on a single day. There are `r nrow(distinct(ny_noaa, id))` unique weather stations. The total number of variables is `r ncol(ny_noaa)`, of which "prcp", "snow", "snwd", "tmax", and "tmin" are key variables. The extent to which missing values is an issue is very large because there are `r sum(is.na(ny_noaa))` missing values in the entire dataset.
+
+```{r}
+tidy_nynoaa = separate(ny_noaa, date, into = c("year", "month", "day"), sep = "-")
+```
+
