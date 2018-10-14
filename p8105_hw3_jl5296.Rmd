@@ -108,6 +108,20 @@ instacart %>%
     discrete = TRUE
   )
 
+instacart %>% 
+  filter(aisle == "baking ingredients"| aisle == "dog food care"| aisle == "packaged vegetables fruits") %>% 
+  group_by(aisle, product_name) %>% 
+  summarize(n = n()) %>% 
+  filter(min_rank(desc(n)) < 2) 
+  
+instacart %>% 
+  filter(product_name == "Pink Lady Apples"| product_name == "Coffee Ice Cream") %>% 
+  group_by(product_name, order_dow) %>% 
+  summarize(mean_hour = mean(order_hour_of_day)) %>% 
+  spread(key = order_dow, value = mean_hour) %>% 
+  rename(Monday = '0', Tuesday = '1', Wednesday = '2', Thursday = '3', Friday = '4', Saturday = '5', Sunday = '6')%>% 
+  knitr::kable(digits = 2)
+
 
 ```
 
