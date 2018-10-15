@@ -8,6 +8,9 @@ output: github_document
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(p8105.datasets)
+library(hexbin)
+library(patchwork)
+
 knitr::opts_chunk$set(
   fig.width = 15,
   fig.height = 5,
@@ -18,8 +21,9 @@ theme_set(theme_bw() + theme(legend.position = "bottom"))
 ```
 
 ## Problem 1
+
 ### Clean BRFSS dataset
-```{r}
+```{r load_tidy_data}
 data("brfss_smart2010")
 
 # clean dataset
@@ -30,11 +34,10 @@ tidy_brfss =
   mutate(response = as.factor(response)) %>% 
   arrange(match(response, c("Excellent", "Very good", "Good", "Fair", "Poor")))
   
-tidy_brfss
-  
 ```
+
 ### In 2002, which states were observed at 7 locations?
-```{r}
+```{r p1_q1}
 tidy_brfss %>% 
   filter(year == 2002) %>% 
   group_by(state) %>% 
@@ -44,7 +47,7 @@ tidy_brfss %>%
 Based on the table above, CT, FL, and NC were observed 7 times.
 
 ### Spaghetti plot
-```{r}
+```{r p1_q2}
 # create "spaghetti plot"
 tidy_brfss %>% 
   group_by(state, year) %>% 
@@ -65,7 +68,8 @@ tidy_brfss %>%
 
 ### Table showing the **mean** and **standard deviation** of the proportion of "Excellent" responses across locations in NY State of years **2002**, **2006**, and **2010**.
 
-```{r}
+```{r p1_q3}
+# create table
 tidy_brfss %>% 
   filter(state == "NY", year == 2002|year == 2006|year ==2010, response == "Excellent") %>%
   group_by(year, state) %>% 
@@ -74,7 +78,7 @@ tidy_brfss %>%
 ```
 
 ### Computation and five-panel plot generation
-```{r}
+```{r p1_q4}
 # computation of average propotion in each response category
 tidy2_brfss = select(tidy_brfss, year:county, response, data_value) %>% 
   spread(response, data_value) %>% 
@@ -86,13 +90,19 @@ tidy2_brfss = select(tidy_brfss, year:county, response, data_value) %>%
 # make five-panel plot
 ggplot(tidy2_brfss, aes(x = year, y = resp_prop, color = state)) +
   geom_line() +
-  facet_grid(~avg_response_type)
+  facet_grid(~avg_response_type) +
+  labs (
+    title = "Average Proportion for each Response Category",
+    x = "Year", 
+    y = "Response Proportion"
+  )
   
 ```
+
 # Problem 2
 
 ### Brief description and exploration of dataset
-```{r}
+```{r load_data}
 data("instacart")
 
 dist_prod =  distinct(instacart, product_id, .keep_all = TRUE)
@@ -101,8 +111,9 @@ dist_user = distinct(instacart, user_id, .keep_all = TRUE)
 This dataset comes from an online grocery store in NYC. The size of the dataset is `r dim(instacart)`, with `r nrow(instacart)` observations. There are `r nrow(dist_prod)` distinct products for sale and `r nrow(dist_user)` unique users. The order ids are the same for a single user. There are a total of 15 variables, of which *order id*, *product id*, and *user id* are key variables that identify observations. For example, the first row corresponds to the product "Bulgarian Yogurt" ordered from an user.
 
 
-```{r}
-# number of aisles
+### How many aisles are there, and which aisles are the most items ordered from?
+```{r p2_q1}
+# number of unique aisles
 nrow(distinct(instacart, aisle_id))
 
 # aisles from which most items are ordered
@@ -114,7 +125,7 @@ instacart %>%
 There are `r nrow(distinct(instacart, aisle_id))` aisles and according to the table, aisle83 had the most items ordered from (150609).
 
 ### Plot of number of items ordered in each aisle
-```{r}
+```{r p2_q2}
 # create plot
 instacart %>% 
   group_by(aisle_id) %>% 
@@ -122,6 +133,11 @@ instacart %>%
   mutate(aisle_id = as.character(aisle_id)) %>% 
   ggplot(aes(x = as.character(aisle_id), y = n_items, color = aisle_id)) +
   geom_point(alpha = 0.5) +
+  labs (
+    title = "Number of Items vs. Aisle ID",
+    x = "Aisle ID",
+    y = "Number of Items"
+  )
   viridis::scale_color_viridis(
     name = "Aisle ID", 
     discrete = TRUE
@@ -129,16 +145,20 @@ instacart %>%
 ```
 
 ### Most popular items
-```{r}
+```{r p2_q3}
 # table of most popular item ordered in specific aisle categories
 instacart %>% 
   filter(aisle == "baking ingredients"| aisle == "dog food care"| aisle == "packaged vegetables fruits") %>% 
   group_by(aisle, product_name) %>% 
   summarize(n = n()) %>% 
-  filter(min_rank(desc(n)) < 2) 
+  filter(min_rank(desc(n)) < 2) %>% 
+  knitr::kable()
 ```
+
+Based on the table, the most popular items ordered from aisle "Baking Ingredients", "Dog food care", "packaged vegetable fruits" are "light brown sugar", "snack sticks chicken...", and "organic baby spinach" respectively.
+
 ### Mean hour of the day
-```{r}
+```{r p2_q4}
 # table of mean hour of day at which some products are ordered on each day of the week
 instacart %>% 
   filter(product_name == "Pink Lady Apples"| product_name == "Coffee Ice Cream") %>% 
@@ -152,13 +172,13 @@ instacart %>%
 
 # Problem 3
 ### Short description
-```{r}
+```{r load_p3_data}
 data("ny_noaa")
 ```
 The size of this dataset is `r dim(ny_noaa)`. There are a total of `r nrow(ny_noaa)` observations with each row corresponding to a observation from a weather station on a single day. There are `r nrow(distinct(ny_noaa, id))` unique weather stations. The total number of variables is `r ncol(ny_noaa)`, of which "prcp", "snow", "snwd", "tmax", and "tmin" are key variables. The extent to which missing values is an issue is very large because there are `r sum(is.na(ny_noaa))` missing values in the entire dataset.
 
 ### Data cleaning
-```{r}
+```{r tidy_p3_data}
 tidy_nynoaa = 
   separate(ny_noaa, date, into = c("year", "month", "day"), sep = "-") %>% 
   mutate(tmin = as.numeric(tmin), tmax = as.numeric(tmax), prcp = as.numeric(prcp), snow = as.numeric(snow), snwd = as.numeric(snwd)) %>% 
@@ -167,17 +187,16 @@ tidy_nynoaa =
 I cleaned the dataset by separating *year*, *month*, and *day* into distinct variables, converted quantitative variables into numeric, and recomputed observations for *prcp*, *tmin*, and *tmax* to reasonable units mm and degrees celsius as opposed to the initial 1/10th of mm and 1/10th of degrees celsius.
 
 ### Most common value for snowfall
-```{r}
+```{r p3_q1}
 tidy_nynoaa %>% 
   group_by(snow) %>% 
   summarize(n = n()) %>% 
   arrange(desc(n))
 ```
-
 Based on the table, the most commonly observed value is 0, because throughout the days in a year, there is no snowfall in the majority of times.
 
 ### Two-panel plot for average tmax
-```{r}
+```{r p3_q2}
 # create 2-panel plot
 tidy_nynoaa %>% 
   filter(month == "01"| month == "07") %>% 
@@ -185,16 +204,19 @@ tidy_nynoaa %>%
   summarize(avg_tmax = mean(tmax, na.rm = TRUE)) %>% 
   ggplot(aes(x = year, y = avg_tmax)) +
   geom_point(alpha = .5) +
-  facet_grid(~month)
+  facet_grid(~month) +
+  labs (
+    title = "Average tmax in January and July across Years",
+    x = "Year",
+    y = "Average tmax"
+  )
   
 ```
+
 According to the plot, the average max temperatures for each station across years are generally lower in January than in July. In January, the mean max temperatures are scattered around 0 degrees while those for July are scattered around 25 degrees. There seems to be an outlier value in January of 1982 of around -15 degrees, and another one in July of 1988 of around 15 degrees.
 
 ### Juxtaposition of different plots using patchwork
-```{r}
-library(hexbin)
-library(patchwork)
-
+```{r p3_q3}
 # create plot for tmax vs. tmin
 p1 = tidy_nynoaa %>% 
   ggplot(aes(x = tmax, y = tmin)) +
