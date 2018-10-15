@@ -144,6 +144,7 @@ tidy_nynoaa %>%
   summarize(n = n()) %>% 
   arrange(desc(n))
 ```
+The units values for *prcp*, *tmin*, and *tmax* are recomputed to mm and degrees celsius.
 The most commonly observed value is 0, because throughout the days in a year, there is no snowfall in the majority of times.
 
 ```{r}
@@ -156,12 +157,20 @@ tidy_nynoaa %>%
   facet_grid(~month)
   
 ```
-
+According to the plot, the average max temperatures for each station across years are generally lower in January than in July. In January, the mean max temperatures are scattered around 0 degrees while those for July are scattered around 25 degrees. There seems to be an outlier value in January of 1982 of around -15 degrees, and another one in July of 1988 of around 15 degrees.
 ```{r}
+library(hexbin)
 library(patchwork)
+
 p1 = tidy_nynoaa %>% 
   ggplot(aes(x = tmax, y = tmin)) +
-  geom_point(alpha = 0.5) +
-  theme(legend.position = "none")
+  geom_hex()
+
+p2 = tidy_nynoaa %>% 
+  filter(snow < 100 & snow > 0) %>% 
+  ggplot(aes(x = snow, fill = year)) +
+           geom_density(alpha = .5)
+
+p1 + p2
 ```
 
