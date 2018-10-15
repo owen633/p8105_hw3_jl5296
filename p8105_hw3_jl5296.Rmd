@@ -220,13 +220,21 @@ According to the plot, the average max temperatures for each station across year
 # create plot for tmax vs. tmin
 p1 = tidy_nynoaa %>% 
   ggplot(aes(x = tmax, y = tmin)) +
-  geom_hex()
+  geom_hex() +
+  labs(
+    title = "tmax vs. tmin"
+  )
 
-# create plot for distribution of snowfall 
+# create plot for distribution of snowfall between 0 and 100mm
 p2 = tidy_nynoaa %>% 
   filter(snow < 100 & snow > 0) %>% 
   ggplot(aes(x = snow, fill = year)) +
-           geom_density(alpha = .5)
+  geom_density(alpha = .5) +
+  labs(
+    title = "Snowfall Distribution by Year ",
+    x = "Snowfall(mm)"
+  )
+  
 # use patchwork package to combine panels
 p1 + p2
 ```
